@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RDE browser encryption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>RDE browser encryption</h1>
+            <div>
+                <div class="mb-3">
+                    <label for="enrollmentParams" class="form-label">Enrollment parameters</label>
+                    <textarea class="form-control" id="enrollmentParams" name="enrollmentParams" rows="3">{"n":223,"Fid":14,"Fcont":"6E8201D9318201D5300D060804007F0007020202020101300F060A04007F000702020302040201013012060A04007F0007020204020402010202010E30170606678108010105020101060A04007F0007010104010330820184060904007F000702020102308201753082011D06072A8648CE3D020130820110020101303406072A8648CE3D0101022900D35E472036BC4FB7E13C785ED201E065F98FCFA6F6F40DEF4F92B9EC7893EC28FCD412B1F1B32E27305404283EE30B568FBAB0F883CCEBD46D3F3BB8A2A73513F5EB79DA66190EB085FFA9F492F375A97D860EB404","caOid":"0.4.0.127.0.7.2.2.3.2.4","piccPublicKey":"308201753082011D06072A8648CE3D020130820110020101303406072A8648CE3D0101022900D35E472036BC4FB7E13C785ED201E065F98FCFA6F6F40DEF4F92B9EC7893EC28FCD412B1F1B32E27305404283EE30B568FBAB0F883CCEBD46D3F3BB8A2A73513F5EB79DA66190EB085FFA9F492F375A97D860EB40428520883949DFDBC42D3AD198640688A6FE13F41349554B49ACC31DCCD884539816F5EB4AC8FB1F1A604510443BD7E9AFB53D8B85289BCC48EE5BFE6F20137D10A087EB6E7871E2A10A599C710AF8D0D39E2061114FDD05545EC1CC8AB4093247F77275E0743FFED117182EAA9C77877AAAC6AC7D35245D1692E8EE1022900D35E472036BC4FB7E13C785ED201E065F98FCFA5B68F12A32D482EC7EE8658E98691555B44C593110201010352000447C465B8D62C87A6320E5F8CEE0D616FAB1920DA2FA48D8A0C38DBDCAE2BC7A8D18BE248918A370914CBC7D2CD80EA9F8E36E447B9DECE44CC1F5A39FA81448FA43B9605541005A4618AE4C5FF5AD9FE","documentName":"Job's paspoort"}</textarea>
+                </div>
+                <button id="keygen" type="submit" class="btn btn-primary">Generate key</button>
+                <div class="mb-3">
+                    <label for="key" class="form-label">Key</label>
+                    <textarea class="form-control" id="key" name="key" rows="1" disabled></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="decryptionParams" class="form-label">Decryption parameters</label>
+                    <textarea class="form-control" id="decryptionParams" name="decryptionParams" rows="3" disabled></textarea>
+                </div>
+                <hr>
+                <div class="mb-3">
+                    <label for="plaintext" class="form-label">Plaintext message</label>
+                    <textarea class="form-control" id="plaintext" name="plaintext" rows="3"></textarea>
+                </div>
+                <button id="encrypt" type="submit" class="btn btn-primary">Encrypt</button>
+                <div class="mb-3">
+                    <label for="ciphertext" class="form-label">Ciphertext</label>
+                    <textarea class="form-control" id="ciphertext" name="ciphertext" rows="3" disabled></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+<script src="asn1-parser.js"></script>
+<script src="elliptic.js"></script>
+<script src="demo.js"></script>
+</body>
+</html>

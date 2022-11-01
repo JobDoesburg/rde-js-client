@@ -52,25 +52,27 @@ class RDEKeyGenerator {
         return new RDEKey(encryptionKey, decryptionParams);
     }
 
+    async generateProtectedCommand(sharedSecret: Uint8Array): Promise<Uint8Array> {
+        const commandAPDUEncoder = this.getAPDUSimulator(sharedSecret, 1);
+        const rbCommand = RDEDocument.readBinaryCommand(this.enrollmentParameters.Fid, this.enrollmentParameters.n);
+        return await commandAPDUEncoder.writeCommand(rbCommand);
+    }
+
     async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<string> {
-        const apduSimulator = this.getAPDUSimulator(sharedSecret);
-        const emulatedResponse = await apduSimulator.write(hexToBytes(this.enrollmentParameters.Fcont));
+        const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
+        const emulatedResponse = await responseAPDUEncoder.writeResponse(hexToBytes(this.enrollmentParameters.Fcont));
         return RDEDocument.getDecryptionKeyFromAPDUResponse(emulatedResponse);
     }
 
-    async generateProtectedCommand(sharedSecret: Uint8Array): Promise<Uint8Array> {
-        const apduSimulator = this.getAPDUSimulator(sharedSecret);
-        const rbCommand = RDEDocument.readBinaryCommand(this.enrollmentParameters.Fid, this.enrollmentParameters.n);
-        return await apduSimulator.writeCommand(rbCommand);
-    }
-
-    private getAPDUSimulator(sharedSecret : Uint8Array) : AESAPDUEncoder {
+    private getAPDUSimulator(sharedSecret : Uint8Array, ssc : number) : AESAPDUEncoder {
         const ksEnc = RDEDocument.deriveKey(toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.ENC_MODE);
         const ksMac = RDEDocument.deriveKey(toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.MAC_MODE);
-        return new AESAPDUEncoder(ksEnc, ksMac);
+        return new AESAPDUEncoder(ksEnc, ksMac, ssc);
     }
 
     static generateKeyPair(curve: elliptic.ec): elliptic.ec.KeyPair {
+        // const pcdPrivateKey = curve.keyFromPrivate("487FF32745997CC30EA75E0DA8E5B2E586C23D9B3EDC9A1CE0529D3813B419338D9E9482AD0DF71C") // should result in key 362465D7EB40AF716CF003D5C94F39D3E3ACB4027277CD1067E28BC75D0FB289
+        // return pcdPrivateKey;
         // const pcdPublicKey = pcdKeyPair.getPublic();
         // const pcdPrivateKey = pcdKeyPair.getPrivate();
         return curve.genKeyPair()

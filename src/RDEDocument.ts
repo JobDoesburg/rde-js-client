@@ -171,7 +171,7 @@ class RDEDocument {
     }
 
     static getDecryptionKeyFromAPDUResponse(apduResponse: Uint8Array) : string {
-        return hash.sha256().update(apduResponse, 'hex').digest('hex');
+        return hash.sha256().update(apduResponse, 'hex').digest('hex').toUpperCase();
     }
 }
 

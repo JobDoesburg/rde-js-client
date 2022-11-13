@@ -48,7 +48,7 @@ class RDEKeyGenerator {
 
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
-        const decryptionParams = new RDEDecryptionParameters(this.oid, pcdKeyPair.getPublic("hex"), toHexString(protectedCommand));
+        const decryptionParams = new RDEDecryptionParameters(this.oid, pcdKeyPair.getPublic(false, "hex"), toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 
@@ -71,10 +71,8 @@ class RDEKeyGenerator {
     }
 
     static generateKeyPair(curve: elliptic.ec): elliptic.ec.KeyPair {
-        // const pcdPrivateKey = curve.keyFromPrivate("487FF32745997CC30EA75E0DA8E5B2E586C23D9B3EDC9A1CE0529D3813B419338D9E9482AD0DF71C") // should result in key 362465D7EB40AF716CF003D5C94F39D3E3ACB4027277CD1067E28BC75D0FB289
-        // return pcdPrivateKey;
-        // const pcdPublicKey = pcdKeyPair.getPublic();
-        // const pcdPrivateKey = pcdKeyPair.getPrivate();
+        // const pcdKeyPair = curve.keyFromPrivate("487FF32745997CC30EA75E0DA8E5B2E586C23D9B3EDC9A1CE0529D3813B419338D9E9482AD0DF71C") // should result in key 362465D7EB40AF716CF003D5C94F39D3E3ACB4027277CD1067E28BC75D0FB289
+        // return pcdKeyPair;
         return curve.genKeyPair()
     }
 }

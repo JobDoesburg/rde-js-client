@@ -2,6 +2,7 @@ import Hex from "@lapo/asn1js/hex";
 import hash from "hash.js";
 import ASN1, {Binary} from "@lapo/asn1js";
 import elliptic, {curves} from "elliptic";
+import {re} from "@lapo/asn1js/base64";
 
 class RDEDocument {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
@@ -119,6 +120,14 @@ class RDEDocument {
             y: y
         };
         return curve.keyFromPublic(pubPoint, 'hex');
+    }
+
+    static encodePublicKey(publicKey : elliptic.ec.KeyPair, keyData : Binary) {
+        const json = ASN1.decode(Hex.decode(keyData))
+        const x = publicKey.getPublic().getX().toString(16);
+        const y = publicKey.getPublic().getY().toString(16);
+        const point = '04' + x + y;
+        const pointHex = Hex.decode(point);
     }
 
     static deriveKey(sharedSecret : string, cipherAlgorithm : string, keyLength : number, mode : string) : Uint8Array {

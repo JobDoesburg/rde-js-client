@@ -39,7 +39,7 @@ class RDEKeyGenerator {
         this.digestAlg = RDEDocument.digestAlgorithmForCipherAlgorithm(this.cipherAlg, this.keyLength)
 
         this.curve = RDEDocument.decodeCurve(enrollmentParameters.piccPublicKey)
-        this.piccPublicKey = RDEDocument.decodePublicKey(this.curve, enrollmentParameters.piccPublicKey)
+        this.piccPublicKey = RDEDocument.decodeECPublicKey(this.curve, enrollmentParameters.piccPublicKey)
     }
 
     async generateKey(): Promise<RDEKey> {
@@ -48,7 +48,8 @@ class RDEKeyGenerator {
 
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
-        const decryptionParams = new RDEDecryptionParameters(this.oid, pcdKeyPair.getPublic(false, "hex"), toHexString(protectedCommand));
+        const pcdPublicKeyEncoded = RDEDocument.reEncodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
+        const decryptionParams = new RDEDecryptionParameters(this.oid, toHexString(pcdPublicKeyEncoded), toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 

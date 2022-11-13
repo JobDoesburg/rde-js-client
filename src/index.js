@@ -39,7 +39,6 @@ async function search() {
     const email = emailField.value
     const response = await fetch(KEYSERVER + "/api/search/?email=" + email);
     const data = await response.json();
-    console.log(data)
     if (data == null)
         enrollmentParamsField.innerText = "No enrollment parameters found for this email address"
     else

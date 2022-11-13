@@ -2,7 +2,15 @@ import Hex from "@lapo/asn1js/hex";
 import hash from "hash.js";
 import ASN1, {Binary} from "@lapo/asn1js";
 import elliptic, {curves} from "elliptic";
-import {re} from "@lapo/asn1js/base64";
+
+
+function toHexString(byteArray : Uint8Array) : string {
+    let s = '';
+    byteArray.forEach(function(byte) {
+        s += ('0' + (byte & 0xFF).toString(16)).slice(-2);
+    });
+    return s;
+}
 
 class RDEDocument {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
@@ -84,6 +92,23 @@ class RDEDocument {
         return asnData.stream.hexDump(asnData.posContent(), asnData.posEnd(), true).toLowerCase();
     }
 
+    static reEncodeECPublicKey(publicKeyData : Binary, newPublicKey : elliptic.ec.KeyPair ) : Uint8Array {
+        // TODO: This is a very ugly hack to get the public key in the right format... but it works...
+        let data = toHexString(new Uint8Array(Hex.decode(publicKeyData)));
+
+        const json = ASN1.decode(Hex.decode(publicKeyData))
+        const oldPoint = RDEDocument.getContentFromASNStream(json.sub[1]);
+        const oldX = oldPoint.slice(4, 4 + ((oldPoint.length - 4) / 2));
+        const oldY = oldPoint.slice(4 + ((oldPoint.length - 4) / 2));
+
+        const newX = newPublicKey.getPublic().getX().toString(16);
+        const newY = newPublicKey.getPublic().getY().toString(16);
+        data = data.replace(oldX, newX);
+        data = data.replace(oldY, newY);
+
+        return Hex.decode(data);
+    }
+
     static decodeCurve(publicKeyData : Binary) : elliptic.ec {
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const p = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
@@ -110,7 +135,7 @@ class RDEDocument {
         return new elliptic.ec(curveSpec);
     }
 
-    static decodePublicKey(curve : elliptic.ec, publicKeyData : Binary) : elliptic.ec.KeyPair {
+    static decodeECPublicKey(curve : elliptic.ec, publicKeyData : Binary) : elliptic.ec.KeyPair {
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const point = RDEDocument.getContentFromASNStream(json.sub[1]);
         const x = point.slice(4, 4 + ((point.length - 4) / 2));
@@ -120,14 +145,6 @@ class RDEDocument {
             y: y
         };
         return curve.keyFromPublic(pubPoint, 'hex');
-    }
-
-    static encodePublicKey(publicKey : elliptic.ec.KeyPair, keyData : Binary) {
-        const json = ASN1.decode(Hex.decode(keyData))
-        const x = publicKey.getPublic().getX().toString(16);
-        const y = publicKey.getPublic().getY().toString(16);
-        const point = '04' + x + y;
-        const pointHex = Hex.decode(point);
     }
 
     static deriveKey(sharedSecret : string, cipherAlgorithm : string, keyLength : number, mode : string) : Uint8Array {

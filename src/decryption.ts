@@ -1,4 +1,4 @@
-import DecryptionHandshakeProtocol from "./decryption/RDEDecryptionHandshakeProtocol";
-import DecryptionParameters from "./data/RDEDecryptionParameters";
+import RDEDecryptionHandshakeProtocol from "./decryption/RDEDecryptionHandshakeProtocol";
+import RDEDecryptionParameters from "./data/RDEDecryptionParameters";
 
-export { DecryptionParameters, DecryptionHandshakeProtocol};
+export { RDEDecryptionParameters, RDEDecryptionHandshakeProtocol};

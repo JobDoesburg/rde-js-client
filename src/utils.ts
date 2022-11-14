@@ -13,3 +13,5 @@ function hexToBytes(hex : string) : Uint8Array{
         bytes.push(parseInt(hex.substr(c, 2), 16));
     return new Uint8Array(bytes);
 }
+export default { toHexString, hexToBytes };
+

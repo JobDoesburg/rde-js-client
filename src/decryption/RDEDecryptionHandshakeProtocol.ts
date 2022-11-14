@@ -1,4 +1,5 @@
 import DecryptionParameters from "../data/RDEDecryptionParameters";
+import utils from "../utils";
 
 export default class RDEDecryptionHandshakeProtocol {
     public static keyAlgorithm = {
@@ -44,7 +45,7 @@ export default class RDEDecryptionHandshakeProtocol {
             this.sharedKey,
             new TextEncoder().encode(data)
         );
-        console.log("Encrypted data", toHexString(new Uint8Array(encryptedData)));
+        console.log("Encrypted data", utils.toHexString(new Uint8Array(encryptedData)));
         this.socket.send(encryptedData)
     }
 
@@ -60,7 +61,7 @@ export default class RDEDecryptionHandshakeProtocol {
         await this.genIv();
         const data = {
             "key": exportedBrowserKey,
-            "iv": toHexString(this.iv)
+            "iv": utils.toHexString(this.iv)
         }
         console.log("Sending data", data);
         this.socket.send(JSON.stringify(data));
@@ -124,7 +125,7 @@ export default class RDEDecryptionHandshakeProtocol {
             console.log("Handshake complete");
             await this.sendDecryptionParameters()
         } else {
-            this.retrievedKey = await this.receiveRetrievedKey(hexToBytes(event.data));
+            this.retrievedKey = await this.receiveRetrievedKey(utils.hexToBytes(event.data));
             console.log("Retrieved key", this.retrievedKey);
             this.socket.close()
         }

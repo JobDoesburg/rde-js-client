@@ -4,6 +4,7 @@ import RDEDocument from "./RDEDocument";
 import elliptic from "elliptic";
 import AESAPDUEncoder from "./AESAPDUEncoder";
 import RDEKey from "../data/RDEKey";
+import utils from "../utils";
 
 
 export default class RDEKeyGenerator {
@@ -34,7 +35,7 @@ export default class RDEKeyGenerator {
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
         const pcdPublicKeyEncoded = RDEDocument.reEncodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
-        const decryptionParams = new DecryptionParameters(this.oid, toHexString(pcdPublicKeyEncoded), toHexString(protectedCommand));
+        const decryptionParams = new DecryptionParameters(this.oid, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 
@@ -46,13 +47,13 @@ export default class RDEKeyGenerator {
 
     async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<string> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
-        const emulatedResponse = await responseAPDUEncoder.writeResponse(hexToBytes(this.enrollmentParameters.Fcont));
+        const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.Fcont));
         return RDEDocument.getDecryptionKeyFromAPDUResponse(emulatedResponse);
     }
 
     private getAPDUSimulator(sharedSecret : Uint8Array, ssc : number) : AESAPDUEncoder {
-        const ksEnc = RDEDocument.deriveKey(toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.ENC_MODE);
-        const ksMac = RDEDocument.deriveKey(toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.MAC_MODE);
+        const ksEnc = RDEDocument.deriveKey(utils.toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.ENC_MODE);
+        const ksMac = RDEDocument.deriveKey(utils.toHexString(sharedSecret), this.cipherAlg, this.keyLength, RDEDocument.MAC_MODE);
         return new AESAPDUEncoder(ksEnc, ksMac, ssc);
     }
 

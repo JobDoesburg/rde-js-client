@@ -2,6 +2,7 @@ import Hex from "@lapo/asn1js/hex";
 import hash from "hash.js";
 import ASN1, {Binary} from "@lapo/asn1js";
 import elliptic, {curves} from "elliptic";
+import utils from "../utils";
 
 
 export default class RDEDocument {
@@ -86,7 +87,7 @@ export default class RDEDocument {
 
     static reEncodeECPublicKey(publicKeyData : Binary, newPublicKey : elliptic.ec.KeyPair ) : Uint8Array {
         // TODO: This is a very ugly hack to get the public key in the right format... but it works...
-        let data = toHexString(new Uint8Array(Hex.decode(publicKeyData)));
+        let data = utils.toHexString(new Uint8Array(Hex.decode(publicKeyData)));
 
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const oldPoint = RDEDocument.getContentFromASNStream(json.sub[1]);

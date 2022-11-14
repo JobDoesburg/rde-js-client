@@ -9,8 +9,8 @@ module.exports = {
     watch: true,
     output: {
         filename: '[name].js',
+        library: '[name]',
         path: path.resolve(__dirname, 'dist'),
-        library: 'RDEKeyGen',
     },
     module: {
         rules: [

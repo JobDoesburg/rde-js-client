@@ -1,7 +1,3 @@
-import RDEEnrollmentParameters from "./RDEEnrollmentParameters";
-import RDEKeyGenerator from "./RDEKeyGenerator";
-import RDEDecryptionHandshakeProtocol from "./DecryptionHandshakeProtocol";
-
 const KEYSERVER = "https://keyserver.rde.jobdoesburg.dev"
 const PROXYSERVER = "https://proxyserver.rde.jobdoesburg.dev"
 const PROXYSERVERWS = "wss://proxyserver.rde.jobdoesburg.dev"
@@ -22,12 +18,11 @@ let handshake;
 let rdeKey;
 
 async function generateKey() {
-    const enrollmentData = RDEEnrollmentParameters.fromJson(enrollmentParamsField.value)
-    const keyGenerator = new RDEKeyGenerator(enrollmentData)
+    const enrollmentData = RDEKeyGen.RDEEnrollmentParameters.fromJson(enrollmentParamsField.value)
+    const keyGenerator = new RDEKeyGen.RDEKeyGenerator(enrollmentData)
     rdeKey = await keyGenerator.generateKey()
     keyField.innerText = rdeKey.encryptionKey
     decryptionParamsField.innerText = JSON.stringify(rdeKey.decryptionParameters)
-
 }
 
 async function search() {

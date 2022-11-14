@@ -1,12 +1,13 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/index.js',
+    entry: './src/index.ts',
     mode: 'development',
     watch: true,
     output: {
-        filename: 'rde-keygen.js',
+        filename: 'RDEKeyGen.js',
         path: path.resolve(__dirname, 'dist'),
+        library: 'RDEKeyGen',
     },
     module: {
         rules: [
@@ -17,6 +18,7 @@ module.exports = {
             },
         ],
     },
+
     resolve: {
         extensions: ['.ts', '.js'],
     },

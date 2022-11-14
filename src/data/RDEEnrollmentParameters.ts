@@ -1,4 +1,4 @@
-class RDEEnrollmentParameters {
+export default class RDEEnrollmentParameters {
     constructor(readonly n : number, readonly Fid : number, readonly Fcont : string, readonly caOid : string, readonly piccPublicKey : string, readonly documentName : string) {
         this.n = n;
         this.Fid = Fid;
@@ -14,5 +14,3 @@ class RDEEnrollmentParameters {
     }
 
 }
-
-export default RDEEnrollmentParameters;

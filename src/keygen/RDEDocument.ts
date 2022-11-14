@@ -4,15 +4,7 @@ import ASN1, {Binary} from "@lapo/asn1js";
 import elliptic, {curves} from "elliptic";
 
 
-function toHexString(byteArray : Uint8Array) : string {
-    let s = '';
-    byteArray.forEach(function(byte) {
-        s += ('0' + (byte & 0xFF).toString(16)).slice(-2);
-    });
-    return s;
-}
-
-class RDEDocument {
+export default class RDEDocument {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
     public static ID_CA_ECDH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.2.1";
     public static ID_CA_DH_AES_CBC_CMAC_128 = "0.4.0.127.0.7.2.2.3.1.2";
@@ -200,5 +192,3 @@ class RDEDocument {
         return hash.sha256().update(apduResponse, 'hex').digest('hex').toUpperCase();
     }
 }
-
-export default RDEDocument;

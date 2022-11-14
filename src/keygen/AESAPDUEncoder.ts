@@ -1,7 +1,7 @@
 import {AesCmac} from "aes-cmac";
 import {CBC, ECB} from "aes-ts";
 
-class AESAPDUEncoder {
+export default class AESAPDUEncoder {
     static BLOCK_SIZE = 16
     static SW1 = 0x90
     static SW2 = 0x00
@@ -217,5 +217,3 @@ class AESAPDUEncoder {
         return result;
     }
 }
-
-export default AESAPDUEncoder;

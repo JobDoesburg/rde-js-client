@@ -12,6 +12,11 @@
         <div class="col-12">
             <h1>RDE browser encryption</h1>
             <div>
+                <h3 class="mt-3">Enrollment</h3>
+                <p>Using keyserver at <code>https://keyserver.rde.jobdoesburg.dev</code></p>
+                <a href="https://keyserver.rde.jobdoesburg.dev" target="_blank" class="btn btn-primary">Enroll a new RDE document</a>
+                <hr>
+                <h3 class="mt-3">Key generation</h3>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" value="job.doesburg@surf.nl">
@@ -30,22 +35,14 @@
                     <label for="decryptionParams" class="form-label">Decryption parameters</label>
                     <textarea class="form-control" id="decryptionParams" name="decryptionParams" rows="3" disabled></textarea>
                 </div>
-                <button id="decryptHandshake" type="submit" class="btn btn-primary">Decryption handshake</button>
-                <div id="qrcode" class="my-3"></div>
                 <hr>
+                <h3 class="mt-3">Key retrieval</h3>
+                <p>Using proxy server at <code>https://proxyserver.rde.jobdoesburg.dev</code></p>
+                <button id="decryptHandshake" type="submit" class="btn btn-primary">Start decryption handshake</button>
+                <div id="qrcode" class="my-3"></div>
                 <div class="mb-3">
                     <label for="retrievedKey" class="form-label">Retrieved key</label>
                     <textarea class="form-control" id="retrievedKey" name="retrievedKey" rows="1" disabled></textarea>
-                </div>
-                <hr>
-                <div class="mb-3">
-                    <label for="plaintext" class="form-label">Plaintext message</label>
-                    <textarea class="form-control" id="plaintext" name="plaintext" rows="3"></textarea>
-                </div>
-                <button id="encrypt" type="submit" class="btn btn-primary">Encrypt</button>
-                <div class="mb-3">
-                    <label for="ciphertext" class="form-label">Ciphertext</label>
-                    <textarea class="form-control" id="ciphertext" name="ciphertext" rows="3" disabled></textarea>
                 </div>
             </div>
         </div>

@@ -3,7 +3,8 @@ import RDEKeyGenerator from "./RDEKeyGenerator";
 import RDEDecryptionHandshakeProtocol from "./DecryptionHandshakeProtocol";
 
 const KEYSERVER = "https://keyserver.rde.jobdoesburg.dev"
-const PROXYSERVER = "wss://proxyserver.rde.jobdoesburg.dev"
+const PROXYSERVER = "https://proxyserver.rde.jobdoesburg.dev"
+const PROXYSERVERWS = "wss://proxyserver.rde.jobdoesburg.dev"
 
 const emailField = document.getElementById('email');
 const searchButton = document.getElementById('search');
@@ -12,9 +13,6 @@ const generateButton = document.getElementById('keygen');
 const keyField = document.getElementById('key');
 const decryptionParamsField = document.getElementById('decryptionParams');
 const retrievedKeyField = document.getElementById('retrievedKey');
-const plaintextField = document.getElementById('plaintext');
-const ciphertextField = document.getElementById('ciphertext');
-const encryptButton = document.getElementById('encrypt');
 
 const qrCodes = document.getElementById("qrcode");
 
@@ -30,9 +28,6 @@ async function generateKey() {
     keyField.innerText = rdeKey.encryptionKey
     decryptionParamsField.innerText = JSON.stringify(rdeKey.decryptionParameters)
 
-}
-async function encrypt() {
-    console.log("Not implemented")
 }
 
 async function search() {
@@ -55,12 +50,13 @@ async function startHandshake(socket, url) {
 }
 
 async function decryptHandshake() {
-    const randomToken = crypto.getRandomValues(new Uint32Array(1))[0]
-    console.log("Random token: " + randomToken)
-    const url = PROXYSERVER + '/socket/' + randomToken
-    const socket = await new WebSocket( url);
+    const socketResponse = await fetch(PROXYSERVER + "/open");
+    const token = await socketResponse.text();
+    const socketUrl = PROXYSERVERWS + "/socket/" + token;
+    console.log("Using socket on", socketUrl)
+    const socket = await new WebSocket(socketUrl);
     socket.onopen = function (event) {
-        startHandshake(socket, url)
+        startHandshake(socket, socketUrl)
     }
     socket.onmessage = function (event) {
         qrCodes.innerHTML = ""
@@ -78,6 +74,5 @@ async function decryptHandshake() {
 
 searchButton.addEventListener('click', search);
 generateButton.addEventListener('click', generateKey);
-encryptButton.addEventListener('click', encrypt);
 decryptHandshakeButton.addEventListener('click', decryptHandshake);
 

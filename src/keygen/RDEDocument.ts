@@ -89,7 +89,7 @@ export default class RDEDocument {
 
     /**
      * Encode a public key in the format used by the RDE protocol.
-     * TODO: This is a very ugly hack to get the public key in the right format... but it works...
+     * This is a very ugly hack to get the public key in the right format... but it works...
      * @param publicKeyData the existing encoded EC public key
      * @param newPublicKey the new public key to encode
      */

@@ -1,3 +1,6 @@
+/**
+ * Enrollment parameters for RDE.
+ */
 export default class RDEDecryptionParameters {
     constructor(readonly oid : string, readonly publicKey : string, readonly protectedCommand : string) {
         this.oid = oid;

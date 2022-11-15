@@ -1,3 +1,6 @@
+/**
+ * Enrollment parameters for an RDE document.
+ */
 export default class RDEEnrollmentParameters {
     constructor(readonly n : number, readonly Fid : number, readonly Fcont : string, readonly caOid : string, readonly piccPublicKey : string, readonly documentName : string) {
         this.n = n;

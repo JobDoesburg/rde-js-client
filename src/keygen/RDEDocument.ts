@@ -4,7 +4,9 @@ import ASN1, {Binary} from "@lapo/asn1js";
 import elliptic, {curves} from "elliptic";
 import utils from "../utils";
 
-
+/**
+ * Utility class with static methods for different kinds of RDE documents.
+ */
 export default class RDEDocument {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
     public static ID_CA_ECDH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.2.1";
@@ -85,8 +87,13 @@ export default class RDEDocument {
         return asnData.stream.hexDump(asnData.posContent(), asnData.posEnd(), true).toLowerCase();
     }
 
-    static reEncodeECPublicKey(publicKeyData : Binary, newPublicKey : elliptic.ec.KeyPair ) : Uint8Array {
-        // TODO: This is a very ugly hack to get the public key in the right format... but it works...
+    /**
+     * Encode a public key in the format used by the RDE protocol.
+     * TODO: This is a very ugly hack to get the public key in the right format... but it works...
+     * @param publicKeyData the existing encoded EC public key
+     * @param newPublicKey the new public key to encode
+     */
+    static reencodeECPublicKey(publicKeyData : Binary, newPublicKey : elliptic.ec.KeyPair ) : Uint8Array {
         let data = utils.toHexString(new Uint8Array(Hex.decode(publicKeyData)));
 
         const json = ASN1.decode(Hex.decode(publicKeyData))
@@ -102,6 +109,10 @@ export default class RDEDocument {
         return Hex.decode(data);
     }
 
+    /**
+     * Retrieve the elliptic curve used by the given public key.
+     * @param publicKeyData the encoded public key
+     */
     static decodeCurve(publicKeyData : Binary) : elliptic.ec {
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const p = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
@@ -128,6 +139,11 @@ export default class RDEDocument {
         return new elliptic.ec(curveSpec);
     }
 
+    /**
+     * Decode the given public key.
+     * @param curve the elliptic curve to use
+     * @param publicKeyData the encoded public key
+     */
     static decodeECPublicKey(curve : elliptic.ec, publicKeyData : Binary) : elliptic.ec.KeyPair {
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const point = RDEDocument.getContentFromASNStream(json.sub[1]);
@@ -140,6 +156,13 @@ export default class RDEDocument {
         return curve.keyFromPublic(pubPoint, 'hex');
     }
 
+    /**
+     * Derive a cipher key from a shared secret.
+     * @param sharedSecret the shared secret
+     * @param cipherAlgorithm the cipher algorithm to use
+     * @param keyLength the key length to use
+     * @param mode the mode to use (either 'enc' or 'mac')
+     */
     static deriveKey(sharedSecret : string, cipherAlgorithm : string, keyLength : number, mode : string) : Uint8Array {
         const digestAlgorithm = RDEDocument.digestAlgorithmForCipherAlgorithm(cipherAlgorithm, keyLength);
         const digest = digestAlgorithm()
@@ -183,12 +206,22 @@ export default class RDEDocument {
         }
     }
 
+    /**
+     * The binary representation of the READ BINARY command APDU.
+     * @see https://icao.int/publications/Documents/9303_p10_cons_en.pdf
+     * @param sfi the SFI of the file to read
+     * @param le the number of bytes to read
+     */
     static readBinaryCommand(sfi: number, le: number) {
         const sfiByte = 0x80 | (sfi & 0xFF);
         return new Uint8Array([0x00, 0xB0, sfiByte, 0x00, 0x00, le]);
 
     }
 
+    /**
+     * Retrieve a key from the encrypted APDU response.
+     * @param apduResponse
+     */
     static getDecryptionKeyFromAPDUResponse(apduResponse: Uint8Array) : string {
         return hash.sha256().update(apduResponse, 'hex').digest('hex').toUpperCase();
     }

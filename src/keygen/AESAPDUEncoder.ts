@@ -1,6 +1,15 @@
 import {AesCmac} from "aes-cmac";
 import {CBC, ECB} from "aes-ts";
 
+/**
+ * This class is used to emulate how an RDE document would encode and decode APDU's, using AES-CBC and AES-CMAC,
+ * following the ICAO 9303-11 standard.
+ *
+ * This class does NOT implement the full standard, but only the parts required for the RDE protocol. Not all
+ * APDU's are supported, and not all APDU's are implemented correctly.
+ *
+ * @see https://www.icao.int/publications/Documents/9303_p11_cons_en.pdf
+ */
 export default class AESAPDUEncoder {
     static BLOCK_SIZE = 16
     static SW1 = 0x90
@@ -14,7 +23,8 @@ export default class AESAPDUEncoder {
 
     private readonly ksEncData : Uint8Array
     private readonly ksMacData: Uint8Array
-    private ssc : Uint8Array = new Uint8Array(AESAPDUEncoder.SSC_LENGTH) // 0 when CA session started, first command is 1, first response is 2
+    private ssc : Uint8Array = new Uint8Array(AESAPDUEncoder.SSC_LENGTH) // Session sequence number
+    // 0 when CA session started, first command is 1, first response is 2
 
     constructor(ksEnc : Uint8Array, ksMac : Uint8Array, ssc : number = 1) {
         this.ksEncData = ksEnc
@@ -22,6 +32,10 @@ export default class AESAPDUEncoder {
         this.ssc[AESAPDUEncoder.SSC_LENGTH - 1] = ssc;
     }
 
+    /**
+     * Encode a command APDU.
+     * @param commandData the unencrypted command apdu data to encode
+     */
     async writeCommand(commandData: Uint8Array) {
         if (commandData.byteLength == 0) throw new Error("Empty data")
         const cla = commandData[0] & 0xff;
@@ -64,7 +78,17 @@ export default class AESAPDUEncoder {
         return do97
     }
 
-    private constructCommandAPDU(cla: number, ins: number, p1: number, p2: number, do8587: Uint8Array, do97: Uint8Array, ) : Uint8Array {
+    /**
+     * Create a command APDU from the given data.
+     * @param cla application class byte
+     * @param ins instruction byte
+     * @param p1 parameter 1 byte
+     * @param p2 parameter 2 byte
+     * @param do8587 data object 8587
+     * @param do97 data object 97
+     * @private
+     */
+    private constructCommandAPDU(cla: number, ins: number, p1: number, p2: number, do8587: Uint8Array, do97: Uint8Array) : Uint8Array {
         const maskedHeader = new Uint8Array([(cla || 0x0C), ins, p1, p2]);
         const paddedMaskedHeader = AESAPDUEncoder.pad(maskedHeader);
 
@@ -90,6 +114,10 @@ export default class AESAPDUEncoder {
         return do8E
     }
 
+    /**
+     * Encode a response APDU.
+     * @param responseData the unencrypted response apdu data to encode
+     */
     async writeResponse(responseData: Uint8Array): Promise<Uint8Array> {
         if (responseData.byteLength == 0) throw new Error("Empty data")
 
@@ -105,16 +133,30 @@ export default class AESAPDUEncoder {
         return result
     }
 
+    /**
+     * Get the AES-CMAC of the given data.
+     * @param data the data to get the AES-CMAC of
+     * @private
+     */
     private async getMac(data: Uint8Array): Promise<Uint8Array> {
         const aesCmac = new AesCmac(this.ksMacData);
         return await aesCmac.calculate(data)
     }
 
+    /**
+     * Get the IV for the AES-CBC cipher (consisting of the AES-ECB encrypted SSC).
+     * @private
+     */
     private getIv(): Uint8Array {
         const aesEcb = new ECB(this.ksEncData);
         return aesEcb.encrypt(this.ssc)
     }
 
+    /**
+     * MAC the given data.
+     * @param data the data to MAC
+     * @private
+     */
     private async doMac(data : Uint8Array) {
         const paddedBytes = new Uint8Array(AESAPDUEncoder.pad(data))
         const macData = new Uint8Array(paddedBytes.byteLength + AESAPDUEncoder.SSC_LENGTH)

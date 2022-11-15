@@ -6,7 +6,9 @@ import AESAPDUEncoder from "./AESAPDUEncoder";
 import RDEKey from "../data/RDEKey";
 import utils from "../utils";
 
-
+/**
+ * Class for generating RDE keys.
+ */
 export default class RDEKeyGenerator {
     private readonly oid: string;
     private readonly agreementAlg: string;
@@ -17,6 +19,10 @@ export default class RDEKeyGenerator {
     private readonly curve: elliptic.ec;
     private piccPublicKey: elliptic.ec.KeyPair;
 
+    /**
+     * Constructor for RDEKeyGenerator.
+     * @param enrollmentParameters enrollment parameters of the RDE document to generate a key for
+     */
     constructor(readonly enrollmentParameters : RDEEnrollmentParameters) {
         this.oid = enrollmentParameters.caOid
         this.agreementAlg = RDEDocument.agreementAlgFromCAOID(this.oid)
@@ -28,23 +34,34 @@ export default class RDEKeyGenerator {
         this.piccPublicKey = RDEDocument.decodeECPublicKey(this.curve, enrollmentParameters.piccPublicKey)
     }
 
+    /**
+     * Generates a key for the given RDE document.
+     */
     async generateKey(): Promise<RDEKey> {
         const pcdKeyPair = RDEKeyGenerator.generateKeyPair(this.curve);
         const sharedSecret = new Uint8Array(pcdKeyPair.derive(this.piccPublicKey.getPublic()).toArray())
 
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
-        const pcdPublicKeyEncoded = RDEDocument.reEncodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
+        const pcdPublicKeyEncoded = RDEDocument.reencodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
         const decryptionParams = new DecryptionParameters(this.oid, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 
+    /**
+     * Generates a protected command for the given RDE document, required to retrieve the decryption key.
+     * @param sharedSecret
+     */
     async generateProtectedCommand(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const commandAPDUEncoder = this.getAPDUSimulator(sharedSecret, 1);
         const rbCommand = RDEDocument.readBinaryCommand(this.enrollmentParameters.Fid, this.enrollmentParameters.n);
         return await commandAPDUEncoder.writeCommand(rbCommand);
     }
 
+    /**
+     * Derives the encryption key from the given shared secret.
+     * @param sharedSecret
+     */
     async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<string> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
         const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.Fcont));

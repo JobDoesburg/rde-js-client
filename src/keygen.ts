@@ -1,3 +1,6 @@
+/**
+ * Classes required for RDE key generation.
+ */
 import RDEDecryptionParameters from "./data/RDEDecryptionParameters";
 import RDEDocument from "./keygen/RDEDocument";
 import RDEEnrollmentParameters from "./data/RDEEnrollmentParameters";

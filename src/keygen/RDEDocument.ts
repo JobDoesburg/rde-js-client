@@ -98,7 +98,8 @@ export default class RDEDocument {
 
         const json = ASN1.decode(Hex.decode(publicKeyData))
         const oldPoint = RDEDocument.getContentFromASNStream(json.sub[1]);
-        const newPoint = newPublicKey.getPublic().encode('hex', false);
+        let newPoint = newPublicKey.getPublic().encode('hex', false);
+        newPoint = "00" + newPoint;
         data = data.replace(oldPoint, newPoint);
 
         return Hex.decode(data);

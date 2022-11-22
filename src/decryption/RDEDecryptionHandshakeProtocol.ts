@@ -19,7 +19,7 @@ export default class RDEDecryptionHandshakeProtocol {
     private sharedKey: CryptoKey;
     private iv: Uint8Array;
 
-    private retrievedKey: string;
+    private retrievedKey: Uint8Array;
 
     /**
      * Creates a new RDEDecryptionHandshakeProtocol instance.
@@ -141,7 +141,7 @@ export default class RDEDecryptionHandshakeProtocol {
      * Receives the retrieved key from the RDE Android client app.
      * @param data
      */
-    async receiveRetrievedKey(data: ArrayBuffer) : Promise<string> {
+    async receiveRetrievedKey(data: ArrayBuffer) : Promise<Uint8Array> {
         const decryptedKey = await this.crypto.subtle.decrypt(
             {
                 name: "AES-CBC",
@@ -151,9 +151,7 @@ export default class RDEDecryptionHandshakeProtocol {
             data
         );
         console.log("Decrypted key", decryptedKey);
-        const decryptedKeyString = new TextDecoder().decode(decryptedKey);
-        console.log("Decrypted key string", decryptedKeyString);
-        return decryptedKeyString;
+        return new Uint8Array(decryptedKey);
     }
 
     /**
@@ -171,7 +169,10 @@ export default class RDEDecryptionHandshakeProtocol {
             console.log("Handshake complete");
             await this.sendDecryptionParameters()
         } else {
-            this.retrievedKey = await this.receiveRetrievedKey(utils.hexToBytes(event.data));
+            let receivedData = await event.data.arrayBuffer()
+            receivedData = new Uint8Array(receivedData)
+            console.log("Received data: ", receivedData);
+            this.retrievedKey = await this.receiveRetrievedKey(receivedData);
             console.log("Retrieved key", this.retrievedKey);
             this.socket.close()
         }
@@ -180,7 +181,7 @@ export default class RDEDecryptionHandshakeProtocol {
     /**
      * Returns the retrieved key from the RDE Android client app.
      */
-    getRetrievedKey() : string {
+    getRetrievedKey() : Uint8Array {
         return this.retrievedKey;
     }
 }

@@ -62,7 +62,7 @@ export default class RDEKeyGenerator {
      * Derives the encryption key from the given shared secret.
      * @param sharedSecret
      */
-    async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<string> {
+    async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
         const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.Fcont));
         return RDEDocument.getDecryptionKeyFromAPDUResponse(emulatedResponse);

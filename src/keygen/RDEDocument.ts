@@ -218,7 +218,7 @@ export default class RDEDocument {
      * Retrieve a key from the encrypted APDU response.
      * @param apduResponse
      */
-    static getDecryptionKeyFromAPDUResponse(apduResponse: Uint8Array) : string {
-        return hash.sha256().update(apduResponse, 'hex').digest('hex').toUpperCase();
+    static getDecryptionKeyFromAPDUResponse(apduResponse: Uint8Array) : Uint8Array {
+        return utils.hexToBytes(hash.sha256().update(apduResponse, 'hex').digest('hex'));
     }
 }

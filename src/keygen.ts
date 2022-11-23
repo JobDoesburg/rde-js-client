@@ -6,5 +6,6 @@ import RDEDocument from "./keygen/RDEDocument";
 import RDEEnrollmentParameters from "./data/RDEEnrollmentParameters";
 import RDEKey from "./data/RDEKey";
 import RDEKeyGenerator from "./keygen/RDEKeyGenerator";
+import utils from "./utils";
 
-export { RDEDecryptionParameters, RDEDocument, RDEEnrollmentParameters, RDEKey, RDEKeyGenerator };
+export { RDEDecryptionParameters, RDEDocument, RDEEnrollmentParameters, RDEKey, RDEKeyGenerator, utils };

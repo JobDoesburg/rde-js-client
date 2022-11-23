@@ -62,7 +62,6 @@ export default class RDEDecryptionHandshakeProtocol {
             this.sharedKey,
             new TextEncoder().encode(data)
         );
-        console.log("Encrypted data", utils.toHexString(new Uint8Array(encryptedData)));
         this.socket.send(encryptedData)
     }
 
@@ -72,7 +71,6 @@ export default class RDEDecryptionHandshakeProtocol {
      */
     private async genIv() {
         this.iv = window.crypto.getRandomValues(new Uint8Array(16));
-        console.log("iv", this.iv);
     }
 
     /**
@@ -80,14 +78,12 @@ export default class RDEDecryptionHandshakeProtocol {
      */
     async sendBrowserKey() {
         const exportedBrowserKey = await RDEDecryptionHandshakeProtocol.exportKey(this.crypto, this.browserKey.publicKey);
-        console.log("Browser key", this.browserKey);
 
         await this.genIv();
         const data = {
             "key": exportedBrowserKey,
             "iv": utils.toHexString(this.iv)
         }
-        console.log("Sending data", data);
         this.socket.send(JSON.stringify(data));
     }
 
@@ -116,7 +112,6 @@ export default class RDEDecryptionHandshakeProtocol {
             false,
             ["encrypt", "decrypt"]
         );
-        console.log("Shared key", this.sharedKey);
     }
 
     /**
@@ -125,7 +120,6 @@ export default class RDEDecryptionHandshakeProtocol {
      */
     async receiveAppKey(data: JsonWebKey) {
         this.appKey = await RDEDecryptionHandshakeProtocol.importKey(this.crypto, data)
-        console.log("App key", this.appKey);
         await this.deriveSharedSecret()
     }
 
@@ -150,7 +144,6 @@ export default class RDEDecryptionHandshakeProtocol {
             this.sharedKey,
             data
         );
-        console.log("Decrypted key", decryptedKey);
         return new Uint8Array(decryptedKey);
     }
 
@@ -159,21 +152,16 @@ export default class RDEDecryptionHandshakeProtocol {
      * @param event
      */
     async handleEvent(event: MessageEvent) {
-        console.log("Received event: ", event);
 
         if (this.appKey == null) {
             const jsonData = JSON.parse(event.data);
-            console.log("Received data: ", jsonData);
             await this.receiveAppKey(jsonData)
             await this.sendBrowserKey()
-            console.log("Handshake complete");
             await this.sendDecryptionParameters()
         } else {
             let receivedData = await event.data.arrayBuffer()
             receivedData = new Uint8Array(receivedData)
-            console.log("Received data: ", receivedData);
             this.retrievedKey = await this.receiveRetrievedKey(receivedData);
-            console.log("Retrieved key", this.retrievedKey);
             this.socket.close()
         }
     }

@@ -7,7 +7,7 @@ import utils from "../utils";
 /**
  * Utility class with static methods for different kinds of RDE documents.
  */
-export default class RDEDocument {
+export default class RDEDocumentUtils {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
     public static ID_CA_ECDH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.2.1";
     public static ID_CA_DH_AES_CBC_CMAC_128 = "0.4.0.127.0.7.2.2.3.1.2";
@@ -97,7 +97,7 @@ export default class RDEDocument {
         let data = utils.toHexString(new Uint8Array(Hex.decode(publicKeyData)));
 
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const oldPoint = RDEDocument.getContentFromASNStream(json.sub[1]);
+        const oldPoint = RDEDocumentUtils.getContentFromASNStream(json.sub[1]);
         let newPoint = newPublicKey.getPublic().encode('hex', false);
         newPoint = "00" + newPoint;
         data = data.replace(oldPoint, newPoint);
@@ -111,11 +111,11 @@ export default class RDEDocument {
      */
     static decodeCurve(publicKeyData : Binary) : elliptic.ec {
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const p = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
-        const a = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[0]);
-        const b = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[1]);
-        const n = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[4]);
-        const g = RDEDocument.getContentFromASNStream(json.sub[0].sub[1].sub[3]);
+        const p = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
+        const a = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[0]);
+        const b = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[1]);
+        const n = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[4]);
+        const g = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[3]);
         const x = g.slice(2, (g.length / 2) + 1);
         const y = g.slice(2 + ((g.length - 2) / 2));
         const curveSpec = new curves.PresetCurve({
@@ -142,7 +142,7 @@ export default class RDEDocument {
      */
     static decodeECPublicKey(curve : elliptic.ec, publicKeyData : Binary) : elliptic.ec.KeyPair {
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const point = RDEDocument.getContentFromASNStream(json.sub[1]);
+        const point = RDEDocumentUtils.getContentFromASNStream(json.sub[1]);
         const x = point.slice(4, 4 + ((point.length - 4) / 2));
         const y = point.slice(4 + ((point.length - 4) / 2));
         const pubPoint = {
@@ -160,12 +160,12 @@ export default class RDEDocument {
      * @param mode the mode to use (either 'enc' or 'mac')
      */
     static deriveKey(sharedSecret : string, cipherAlgorithm : string, keyLength : number, mode : string) : Uint8Array {
-        const digestAlgorithm = RDEDocument.digestAlgorithmForCipherAlgorithm(cipherAlgorithm, keyLength);
+        const digestAlgorithm = RDEDocumentUtils.digestAlgorithmForCipherAlgorithm(cipherAlgorithm, keyLength);
         const digest = digestAlgorithm()
         digest.update(sharedSecret, "hex");
-        if (mode === RDEDocument.ENC_MODE) {
+        if (mode === RDEDocumentUtils.ENC_MODE) {
             digest.update("00000001", "hex");
-        } else if (mode === RDEDocument.MAC_MODE) {
+        } else if (mode === RDEDocumentUtils.MAC_MODE) {
             digest.update("00000002", "hex");
         } else {
             throw new Error('Unsupported mode');

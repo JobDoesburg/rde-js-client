@@ -44,7 +44,7 @@ export default class RDEKeyGenerator {
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
         const pcdPublicKeyEncoded = RDEDocument.reencodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
-        const decryptionParams = new DecryptionParameters(this.oid, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
+        const decryptionParams = new DecryptionParameters(this.enrollmentParameters.documentName, this.oid, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 
@@ -54,7 +54,7 @@ export default class RDEKeyGenerator {
      */
     async generateProtectedCommand(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const commandAPDUEncoder = this.getAPDUSimulator(sharedSecret, 1);
-        const rbCommand = RDEDocument.readBinaryCommand(this.enrollmentParameters.Fid, this.enrollmentParameters.n);
+        const rbCommand = RDEDocument.readBinaryCommand(this.enrollmentParameters.rdeDGId, this.enrollmentParameters.rdeRBLength);
         return await commandAPDUEncoder.writeCommand(rbCommand);
     }
 
@@ -64,7 +64,7 @@ export default class RDEKeyGenerator {
      */
     async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
-        const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.Fcont));
+        const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.rdeDGContent));
         return RDEDocument.getDecryptionKeyFromAPDUResponse(emulatedResponse);
     }
 

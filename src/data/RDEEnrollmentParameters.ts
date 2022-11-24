@@ -2,18 +2,21 @@
  * Enrollment parameters for an RDE document.
  */
 export default class RDEEnrollmentParameters {
-    constructor(readonly n : number, readonly Fid : number, readonly Fcont : string, readonly caOid : string, readonly piccPublicKey : string, readonly documentName : string) {
-        this.n = n;
-        this.Fid = Fid;
-        this.Fcont = Fcont;
+    constructor(readonly documentName : string, readonly caOid : string, readonly piccPublicKey : string, readonly rdeDGId : number, readonly rdeRBLength : number, readonly rdeDGContent : string, readonly securityData : string | null, readonly mrzData : string | null, readonly faceImageData : string | null) {
+        this.documentName = documentName;
         this.caOid = caOid;
         this.piccPublicKey = piccPublicKey;
-        this.documentName = documentName;
+        this.rdeDGId = rdeDGId;
+        this.rdeRBLength = rdeRBLength;
+        this.rdeDGContent = rdeDGContent;
+        this.securityData = securityData;
+        this.mrzData = mrzData;
+        this.faceImageData = faceImageData;
     }
 
     static fromJson(json : any) : RDEEnrollmentParameters {
         const data = JSON.parse(json);
-        return new RDEEnrollmentParameters(data.n, data.Fid, data.Fcont, data.caOid, data.piccPublicKey, data.documentName);
+        return new RDEEnrollmentParameters(data.documentName, data.caOid, data.piccPublicKey, data.rdeDGId, data.rdeRBLength, data.rdeDGContent, data.securityData, data.mrzData, data.faceImageData);
     }
 
 }

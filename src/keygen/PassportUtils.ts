@@ -7,7 +7,7 @@ import utils from "../utils";
 /**
  * Utility class with static methods for different kinds of RDE documents.
  */
-export default class RDEDocumentUtils {
+export default class PassportUtils {
     public static ID_CA_DH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.1.1";
     public static ID_CA_ECDH_3DES_CBC_CBC = "0.4.0.127.0.7.2.2.3.2.1";
     public static ID_CA_DH_AES_CBC_CMAC_128 = "0.4.0.127.0.7.2.2.3.1.2";
@@ -16,6 +16,11 @@ export default class RDEDocumentUtils {
     public static ID_CA_ECDH_AES_CBC_CMAC_128 = "0.4.0.127.0.7.2.2.3.2.2";
     public static ID_CA_ECDH_AES_CBC_CMAC_192 = "0.4.0.127.0.7.2.2.3.2.3";
     public static ID_CA_ECDH_AES_CBC_CMAC_256 = "0.4.0.127.0.7.2.2.3.2.4";
+
+    public static EF_SOD_DG_HASH_SHA_224= "2.16.840.1.101.3.4.2.4"
+    public static EF_SOD_DG_HASH_SHA_256= "2.16.840.1.101.3.4.2.1"
+    public static EF_SOD_DG_HASH_SHA_384= "2.16.840.1.101.3.4.2.2"
+    public static EF_SOD_DG_HASH_SHA_512= "2.16.840.1.101.3.4.2.3"
 
     public static ENC_MODE = "enc";
     public static MAC_MODE = "mac";
@@ -83,6 +88,32 @@ export default class RDEDocumentUtils {
         }
     }
 
+    static digestAlgorithmNameFromHashOID(oid: string): any {
+        if (this.EF_SOD_DG_HASH_SHA_256 == oid) {
+            return "SHA-256";
+        } else if (this.EF_SOD_DG_HASH_SHA_384 == oid) {
+            return "SHA-384";
+        } else if (this.EF_SOD_DG_HASH_SHA_512 == oid) {
+            return "SHA-512";
+        } else {
+            throw new Error("Unsupported hash algorithm");
+        }
+    }
+
+    static digestAlgorithmFromHashOID(oid: string): any {
+        if (this.EF_SOD_DG_HASH_SHA_224 == oid) {
+            return hash.sha224;
+        } else if (this.EF_SOD_DG_HASH_SHA_256 == oid) {
+            return hash.sha256;
+        } else if (this.EF_SOD_DG_HASH_SHA_384 == oid) {
+            return hash.sha384;
+        } else if (this.EF_SOD_DG_HASH_SHA_512 == oid) {
+            return hash.sha512;
+        } else {
+            throw new Error("Unsupported hash algorithm");
+        }
+    }
+
     static getContentFromASNStream(asnData: any) : string {
         return asnData.stream.hexDump(asnData.posContent(), asnData.posEnd(), true).toLowerCase();
     }
@@ -97,7 +128,7 @@ export default class RDEDocumentUtils {
         let data = utils.toHexString(new Uint8Array(Hex.decode(publicKeyData)));
 
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const oldPoint = RDEDocumentUtils.getContentFromASNStream(json.sub[1]);
+        const oldPoint = PassportUtils.getContentFromASNStream(json.sub[1]);
         let newPoint = newPublicKey.getPublic().encode('hex', false);
         newPoint = "00" + newPoint;
         data = data.replace(oldPoint, newPoint);
@@ -111,11 +142,11 @@ export default class RDEDocumentUtils {
      */
     static decodeCurve(publicKeyData : Binary) : elliptic.ec {
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const p = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
-        const a = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[0]);
-        const b = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[1]);
-        const n = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[4]);
-        const g = RDEDocumentUtils.getContentFromASNStream(json.sub[0].sub[1].sub[3]);
+        const p = PassportUtils.getContentFromASNStream(json.sub[0].sub[1].sub[1].sub[1]);
+        const a = PassportUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[0]);
+        const b = PassportUtils.getContentFromASNStream(json.sub[0].sub[1].sub[2].sub[1]);
+        const n = PassportUtils.getContentFromASNStream(json.sub[0].sub[1].sub[4]);
+        const g = PassportUtils.getContentFromASNStream(json.sub[0].sub[1].sub[3]);
         const x = g.slice(2, (g.length / 2) + 1);
         const y = g.slice(2 + ((g.length - 2) / 2));
         const curveSpec = new curves.PresetCurve({
@@ -142,7 +173,7 @@ export default class RDEDocumentUtils {
      */
     static decodeECPublicKey(curve : elliptic.ec, publicKeyData : Binary) : elliptic.ec.KeyPair {
         const json = ASN1.decode(Hex.decode(publicKeyData))
-        const point = RDEDocumentUtils.getContentFromASNStream(json.sub[1]);
+        const point = PassportUtils.getContentFromASNStream(json.sub[1]);
         const x = point.slice(4, 4 + ((point.length - 4) / 2));
         const y = point.slice(4 + ((point.length - 4) / 2));
         const pubPoint = {
@@ -160,12 +191,12 @@ export default class RDEDocumentUtils {
      * @param mode the mode to use (either 'enc' or 'mac')
      */
     static deriveKey(sharedSecret : string, cipherAlgorithm : string, keyLength : number, mode : string) : Uint8Array {
-        const digestAlgorithm = RDEDocumentUtils.digestAlgorithmForCipherAlgorithm(cipherAlgorithm, keyLength);
+        const digestAlgorithm = PassportUtils.digestAlgorithmForCipherAlgorithm(cipherAlgorithm, keyLength);
         const digest = digestAlgorithm()
         digest.update(sharedSecret, "hex");
-        if (mode === RDEDocumentUtils.ENC_MODE) {
+        if (mode === PassportUtils.ENC_MODE) {
             digest.update("00000001", "hex");
-        } else if (mode === RDEDocumentUtils.MAC_MODE) {
+        } else if (mode === PassportUtils.MAC_MODE) {
             digest.update("00000002", "hex");
         } else {
             throw new Error('Unsupported mode');

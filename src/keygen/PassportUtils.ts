@@ -52,7 +52,7 @@ export default class PassportUtils {
             || this.ID_CA_ECDH_AES_CBC_CMAC_256 == oid) {
             return "AES";
         }
-        throw new Error("Unknown CA OID");
+        throw new Error("Unknown OID");
     }
 
     static keyLengthFromCAOID(oid: string): number {
@@ -68,7 +68,7 @@ export default class PassportUtils {
             || this.ID_CA_ECDH_AES_CBC_CMAC_256 == oid) {
             return 256;
         }
-        throw new Error("Unknown CA OID");
+        throw new Error("Unknown OID");
     }
 
     static digestAlgorithmForCipherAlgorithm(cipherAlgorithm : String, keyLength : number) : any {

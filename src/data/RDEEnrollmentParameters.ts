@@ -20,9 +20,9 @@ export default class RDEEnrollmentParameters {
     private efSODEncryptedDigest: string;
     private docSigningCertificate: X509Certificate;
 
-    constructor(readonly documentName : string, readonly caOid : string, readonly piccPublicKey : string, readonly rdeDGId : number, readonly rdeRBLength : number, readonly rdeDGContent : string, readonly securityData : string | null, readonly mrzData : string | null, readonly faceImageData : string | null) {
+    constructor(readonly documentName : string, readonly caOID : string, readonly piccPublicKey : string, readonly rdeDGId : number, readonly rdeRBLength : number, readonly rdeDGContent : string, readonly securityData : string | null, readonly mrzData : string | null, readonly faceImageData : string | null) {
         this.documentName = documentName;
-        this.caOid = caOid;
+        this.caOID = caOID;
         this.piccPublicKey = piccPublicKey;
         this.rdeDGId = rdeDGId;
         this.rdeRBLength = rdeRBLength;
@@ -30,15 +30,21 @@ export default class RDEEnrollmentParameters {
         this.securityData = securityData;
         this.mrzData = mrzData;
         this.faceImageData = faceImageData;
+
+        this.dgHashes = [];
         this.parseSecurityData();
     }
 
     static fromJson(json : any) : RDEEnrollmentParameters {
         const data = JSON.parse(json);
-        return new RDEEnrollmentParameters(data.documentName, data.caOid, data.piccPublicKey, data.rdeDGId, data.rdeRBLength, data.rdeDGContent, data.securityData, data.mrzData, data.faceImageData);
+        return new RDEEnrollmentParameters(data.documentName, data.caOID, data.piccPublicKey, data.rdeDGId, data.rdeRBLength, data.rdeDGContent, data.securityData, data.mrzData, data.faceImageData);
     }
 
     private parseSecurityData() {
+        if (this.securityData == null) {
+            return;
+        }
+
         const decodedData = ASN1.decode(Hex.decode(this.securityData)).sub[0].sub[1].sub[0]
 
         // Get the hash algorithm used to hash the data groups
@@ -212,6 +218,10 @@ export default class RDEEnrollmentParameters {
     }
 
     parseMRZData() : JSON {
+        if (this.mrzData == null) {
+            throw new Error("No MRZ data present, cannot parse");
+        }
+
         const decodedData = ASN1.decode(Hex.decode(this.mrzData))
         const decodedMRZData = decodedData.sub[0].stream.parseStringUTF(decodedData.sub[0].posContent(), decodedData.sub[0].posEnd(), decodedData.sub[0].length).str;
 
@@ -232,6 +242,9 @@ export default class RDEEnrollmentParameters {
     }
 
     parseFaceImage() : string {
+        if (this.faceImageData == null) {
+            throw new Error("No face image data present, cannot parse");
+        }
         return ""; // TODO implement this
     }
 

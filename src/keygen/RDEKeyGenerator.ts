@@ -10,7 +10,7 @@ import utils from "../utils";
  * Class for generating RDE keys.
  */
 export default class RDEKeyGenerator {
-    private readonly oid: string;
+    private readonly caOID: string;
     private readonly agreementAlg: string;
     private readonly cipherAlg: string;
     private readonly keyLength: number;
@@ -24,10 +24,10 @@ export default class RDEKeyGenerator {
      * @param enrollmentParameters enrollment parameters of the RDE document to generate a key for
      */
     constructor(readonly enrollmentParameters : RDEEnrollmentParameters) {
-        this.oid = enrollmentParameters.caOid
-        this.agreementAlg = PassportUtils.agreementAlgFromCAOID(this.oid)
-        this.cipherAlg = PassportUtils.cipherAlgorithmFromCAOID(this.oid)
-        this.keyLength = PassportUtils.keyLengthFromCAOID(this.oid)
+        this.caOID = enrollmentParameters.caOID
+        this.agreementAlg = PassportUtils.agreementAlgFromCAOID(this.caOID)
+        this.cipherAlg = PassportUtils.cipherAlgorithmFromCAOID(this.caOID)
+        this.keyLength = PassportUtils.keyLengthFromCAOID(this.caOID)
         this.digestAlg = PassportUtils.digestAlgorithmForCipherAlgorithm(this.cipherAlg, this.keyLength)
 
         this.curve = PassportUtils.decodeCurve(enrollmentParameters.piccPublicKey)
@@ -44,7 +44,7 @@ export default class RDEKeyGenerator {
         const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
         const pcdPublicKeyEncoded = PassportUtils.reencodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
-        const decryptionParams = new DecryptionParameters(this.enrollmentParameters.documentName, this.oid, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
+        const decryptionParams = new DecryptionParameters(this.enrollmentParameters.documentName, this.caOID, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
         return new RDEKey(encryptionKey, decryptionParams);
     }
 

@@ -64,7 +64,7 @@ export default class RDEKeyGenerator {
      */
     async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
-        const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.rdeDGContent));
+        const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.rdeDGContent).slice(0, this.enrollmentParameters.rdeRBLength));
         return PassportUtils.getDecryptionKeyFromAPDUResponse(emulatedResponse);
     }
 

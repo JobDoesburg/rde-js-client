@@ -11,14 +11,14 @@ import {X509Certificate, X509Certificates, X509ChainBuilder} from "@peculiar/x50
  * Enrollment parameters for an RDE document.
  */
 export default class RDEEnrollmentParameters {
-    private dgHashes: string[];
-    private dgHashAlgorithmOID: string;
-    private efSODHashAlgorithmOID: string;
-    private docSigningCertificate: X509Certificate;
     private dgHashData: string;
-    private efSODencryptedDigest: string;
-    private efSODDigest: string;
+    private dgHashAlgorithmOID: string;
+    private readonly dgHashes: string[];
     private efSODDigestData: string;
+    private efSODHashAlgorithmOID: string;
+    private efSODDigest: string;
+    private efSODEncryptedDigest: string;
+    private docSigningCertificate: X509Certificate;
 
     constructor(readonly documentName : string, readonly caOid : string, readonly piccPublicKey : string, readonly rdeDGId : number, readonly rdeRBLength : number, readonly rdeDGContent : string, readonly securityData : string | null, readonly mrzData : string | null, readonly faceImageData : string | null) {
         this.documentName = documentName;
@@ -30,14 +30,6 @@ export default class RDEEnrollmentParameters {
         this.securityData = securityData;
         this.mrzData = mrzData;
         this.faceImageData = faceImageData;
-
-        this.dgHashData = null;
-        this.dgHashes = [];
-        this.dgHashAlgorithmOID = "";
-        this.docSigningCertificate = null;
-        this.efSODencryptedDigest = null;
-        this.efSODDigest = null
-        this.efSODDigestData = null
         this.parseSecurityData();
     }
 
@@ -68,12 +60,15 @@ export default class RDEEnrollmentParameters {
         // Get the encrypted digest of the EF.SOD
         this.efSODDigestData = PassportUtils.getContentFromASNStream(decodedData.sub[4].sub[0].sub[3])
         this.efSODDigest = PassportUtils.getContentFromASNStream(decodedData.sub[4].sub[0].sub[3].sub[1].sub[1].sub[0])
-        this.efSODencryptedDigest = PassportUtils.getContentFromASNStream(decodedData.sub[4].sub[0].sub[5])
+        this.efSODEncryptedDigest = PassportUtils.getContentFromASNStream(decodedData.sub[4].sub[0].sub[5])
         this.docSigningCertificate = new X509Certificate(decodedData.sub[3].sub[0].toB64String());
     }
 
     private async calculateHash(data : Uint8Array, hashOID = this.dgHashAlgorithmOID) : Promise<string> {
         const algName = PassportUtils.digestAlgorithmNameFromHashOID(hashOID);
+        if (algName == null) {
+            throw new Error("Unsupported hash algorithm");
+        }
         return crypto.subtle.digest(algName, data).then((hash) => {
             return utils.toHexString(new Uint8Array(hash));
         });
@@ -112,7 +107,7 @@ export default class RDEEnrollmentParameters {
         const faceImageDataBytes = utils.hexToBytes(this.faceImageData);
         const calculatedHash = await this.calculateHash(faceImageDataBytes);
         const mrzHash = this.dgHashes[2];
-        return calculatedHash == mrzHash; // TODO this is not the correct data
+        return calculatedHash == mrzHash;
     }
 
     private async verifyCertificateChain(certificates: X509Certificates, date: Date = new Date()): Promise<boolean> {
@@ -154,7 +149,7 @@ export default class RDEEnrollmentParameters {
 
         // Verify if the efSOD is signed by the document signing certificate
         const docSigningKey = await this.docSigningCertificate.publicKey.export()
-        const efSODSignedResult = await crypto.subtle.verify(this.docSigningCertificate.signatureAlgorithm, docSigningKey, utils.hexToBytes(this.efSODencryptedDigest), utils.hexToBytes("3148" + this.efSODDigestData));
+        const efSODSignedResult = await crypto.subtle.verify(this.docSigningCertificate.signatureAlgorithm, docSigningKey, utils.hexToBytes(this.efSODEncryptedDigest), utils.hexToBytes("3148" + this.efSODDigestData));
         if (!efSODSignedResult) {
             console.error("EF.SOD signature check failed");
         }
@@ -174,6 +169,8 @@ export default class RDEEnrollmentParameters {
 
 
     async verify(): Promise<boolean> {
+        // TODO add date parameter to allow for verification of expired passports
+        // TODO add certificate list parameter
         if (this.securityData == null) {
             throw new Error("No security data present, cannot verify");
         }
@@ -214,7 +211,7 @@ export default class RDEEnrollmentParameters {
         return securityDataResult && rdeDGResult && mrzResult && faceImageResult;
     }
 
-    getMRZData() : JSON {
+    parseMRZData() : JSON {
         const decodedData = ASN1.decode(Hex.decode(this.mrzData))
         const decodedMRZData = decodedData.sub[0].stream.parseStringUTF(decodedData.sub[0].posContent(), decodedData.sub[0].posEnd(), decodedData.sub[0].length).str;
 
@@ -234,12 +231,12 @@ export default class RDEEnrollmentParameters {
         return parsedMRZData;
     }
 
-    getFaceImageData() : string {
-        // Parse face image data and output as some image
-        return "";
+    parseFaceImage() : string {
+        return ""; // TODO implement this
     }
 
     getCertificateMasterList() : X509Certificate[] {
+        // TODO separate this
         const pk1data = "-----BEGIN CERTIFICATE-----\n" +
             "MIIGTTCCBDWgAwIBAgICBSAwDQYJKoZIhvcNAQELBQAwaTEQMA4GA1UEAwwHQ1ND\n" +
             "QSBOTDEjMCEGA1UECwwaS2luZ2RvbSBvZiB0aGUgTmV0aGVybGFuZHMxIzAhBgNV\n" +

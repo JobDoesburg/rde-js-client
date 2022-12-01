@@ -91,6 +91,7 @@ export default class RDEEnrollmentParameters {
     }
 
     async verifyMRZData(): Promise<boolean> {
+        // TODO also verify expiration date
         if (this.mrzData == null) {
             throw new Error("No MRZ data present, cannot verify");
         }
@@ -154,7 +155,6 @@ export default class RDEEnrollmentParameters {
 
     async verify(certificateMasterList: [] = []): Promise<boolean> {
         // TODO add date parameter to allow for verification of expired passports
-        // TODO add certificate list parameter
         if (this.securityData == null) {
             throw new Error("No security data present, cannot verify");
         }

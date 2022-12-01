@@ -5,7 +5,7 @@ import ASN1 from "@lapo/asn1js";
 import mrzParser from "mrz";
 import utils from "../utils";
 import PassportUtils from "../keygen/PassportUtils";
-import {X509Certificate, X509Certificates, X509ChainBuilder} from "@peculiar/x509";
+import {X509Certificate, X509ChainBuilder} from "@peculiar/x509";
 
 /**
  * Enrollment parameters for an RDE document.
@@ -219,10 +219,23 @@ export default class RDEEnrollmentParameters {
         return parsedMRZData;
     }
 
-    parseFaceImage() : string {
+    private trimJP2Header(data: string) : string {
+        const splitted = data.split("0000000c6a502020")
+        if (splitted.length != 2) {
+            throw new Error("Invalid JP2 data");
+        }
+        return "0000000c6a502020" + splitted[1];
+    }
+
+    parseFaceImage() : Uint8Array {
         if (this.faceImageData == null) {
             throw new Error("No face image data present, cannot parse");
         }
-        return ""; // TODO implement this
+
+        const decodedData = ASN1.decode(Hex.decode(this.faceImageData))
+        const imageData = PassportUtils.getContentFromASNStream(decodedData.sub[0].sub[1].sub[1])
+
+        // TODO parse other image data and formats from this meta data
+        return utils.hexToBytes(this.trimJP2Header(imageData))
     }
 }

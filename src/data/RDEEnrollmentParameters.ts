@@ -116,34 +116,6 @@ export default class RDEEnrollmentParameters {
         return calculatedHash == mrzHash;
     }
 
-    private async verifyCertificateChain(certificates: X509Certificates, date: Date = new Date()): Promise<boolean> {
-        for (let i = 0; i < certificates.length; i++) {
-            const cert = certificates[i]
-            if (i === 0) {
-                const firstCertShouldBeDocSigningCert = (cert == this.docSigningCertificate)
-                if (!firstCertShouldBeDocSigningCert) {
-                    console.error("First certificate in chain should be the document signing certificate")
-                    return false
-                }
-            }
-            if (i < certificates.length - 1) {
-                const signingCert = certificates[i + 1]
-                const certVerifies = await cert.verify({publicKey: signingCert.publicKey, date: date})
-                if (!certVerifies) {
-                    console.error("Certificate chain verification failed")
-                    return false
-                }
-            } else {
-                const certIsSelfSigned = await cert.isSelfSigned()
-                if (!certIsSelfSigned) {
-                    console.error("Last certificate in chain should be self-signed")
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
     async verifySecurityData(certificateMasterList : [] = []): Promise<boolean> {
         // Verify if the data in the efSOD matches the full hash on the efSOD
         const calculatedEFSODHash = await this.calculateHash(utils.hexToBytes(this.dgHashData), this.efSODHashAlgorithmOID);
@@ -171,7 +143,7 @@ export default class RDEEnrollmentParameters {
                 certificates: certificateMasterList,
             });
             const certificateChain = await chainBuilder.build(this.docSigningCertificate)
-            certificateChainResult = await this.verifyCertificateChain(certificateChain)
+            certificateChainResult = certificateChain.length > 1;
             if (!certificateChainResult) {
                 console.error("Certificate chain verification failed");
             }

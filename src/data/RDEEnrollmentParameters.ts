@@ -18,7 +18,7 @@ export default class RDEEnrollmentParameters {
     private efSODHashAlgorithmOID: string;
     private efSODDigest: string;
     private efSODEncryptedDigest: string;
-    private docSigningCertificate: X509Certificate;
+    docSigningCertificate: X509Certificate;
 
     constructor(readonly documentName : string, readonly caOID : string, readonly piccPublicKey : string, readonly rdeDGId : number, readonly rdeRBLength : number, readonly rdeDGContent : string, readonly securityData : string | null, readonly mrzData : string | null, readonly faceImageData : string | null) {
         this.documentName = documentName;

@@ -68,6 +68,45 @@ The RDE client library depends on the following libraries:
 - [@lapo/asn1js](https://github.com/lapo-luchini/asn1js) for ASN.1 decoding operations. This is used to decode the 
   public key in the enrollment parameters.
 - [@peculiar/x509](https://github.com/PeculiarVentures/x509) for verifying the signature of the enrollment parameters and certificate chain.
+- [cheminfo/mrz](https://github.com/cheminfo/mrz) for parsing MRZ data.
+
+## Face image decoding
+RDE enrollment parameters can contain a facialImage.
+On the documents that we have seen, this image is encoded as JP2 image.
+Browsers generally do not support displaying JP2 images. 
+We advise to use open source libraries to decode the image, such as [OpenJPEG](https://www.npmjs.com/package/openjpeg). 
+We did not include this library in the dependencies of this project, as we do not consider displaying images in browser as a core functionality of this library, better implementations might be available, and we do not want to force users to include such libraries in their project.
+
+An example for decoding the image using OpenJPEG is provided below, displaying the image in a canvas element.
+Note that after writing the image to the canvas, it is also possible to request the base64 data url with `canvas.toDataURL()`.
+
+```javascript
+const faceImageCanvas = document.getElementById('faceImageCanvas');
+const faceImageData = enrollmentData.parseFaceImage();
+displayFaceImage(faceImageData, "jp2");
+
+function displayFaceImage(imageData, imageType) {
+  const rgbImage = openjpeg(imageData, imageType);
+  faceImageCanvas.width = rgbImage.width;
+  faceImageCanvas.height = rgbImage.height;
+  const pixelsPerChannel = rgbImage.width * rgbImage.height;
+  const context = faceImageCanvas.getContext('2d');
+  const rgbaImage = context.createImageData(rgbImage.width, rgbImage.height);
+
+  let i = 0, j = 0;
+  while (i < rgbaImage.data.length && j < pixelsPerChannel) {
+    rgbaImage.data[i] = rgbImage.data[j]; // R
+    rgbaImage.data[i+1] = rgbImage.data[j + pixelsPerChannel]; // G
+    rgbaImage.data[i+2] = rgbImage.data[j + 2*pixelsPerChannel]; // B
+    rgbaImage.data[i+3] = 255; // A
+    
+    // Next pixel
+    i += 4;
+    j += 1;
+  }
+  context.putImageData(rgbaImage, 0, 0);
+}
+```
 
 ## Supported RDE documents
 The RDE client library supports only supports documents that use AES encryption with ECDH key agreement.

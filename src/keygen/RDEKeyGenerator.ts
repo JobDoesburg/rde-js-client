@@ -41,11 +41,11 @@ export default class RDEKeyGenerator {
         const pcdKeyPair = RDEKeyGenerator.generateKeyPair(this.curve);
         const sharedSecret = new Uint8Array(pcdKeyPair.derive(this.piccPublicKey.getPublic()).toArray())
 
-        const encryptionKey = await this.deriveEncryptionKey(sharedSecret);
+        const secretKey = await this.deriveSecretKey(sharedSecret);
         const protectedCommand = await this.generateProtectedCommand(sharedSecret);
         const pcdPublicKeyEncoded = PassportUtils.reencodeECPublicKey(this.enrollmentParameters.piccPublicKey, pcdKeyPair);
         const decryptionParams = new DecryptionParameters(this.enrollmentParameters.documentName, this.caOID, utils.toHexString(pcdPublicKeyEncoded), utils.toHexString(protectedCommand));
-        return new RDEKey(encryptionKey, decryptionParams);
+        return new RDEKey(secretKey, decryptionParams);
     }
 
     /**
@@ -62,7 +62,7 @@ export default class RDEKeyGenerator {
      * Derive the secret key from the given shared secret.
      * @param sharedSecret
      */
-    async deriveEncryptionKey(sharedSecret: Uint8Array): Promise<Uint8Array> {
+    async deriveSecretKey(sharedSecret: Uint8Array): Promise<Uint8Array> {
         const responseAPDUEncoder = this.getAPDUSimulator(sharedSecret, 2);
         const emulatedResponse = await responseAPDUEncoder.writeResponse(utils.hexToBytes(this.enrollmentParameters.rdeDGContent).slice(0, this.enrollmentParameters.rdeRBLength));
         return PassportUtils.getSecretKeyFromAPDUResponse(emulatedResponse);

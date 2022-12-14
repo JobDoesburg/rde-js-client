@@ -170,14 +170,12 @@ export default class AESAPDUEncoder {
         return result
     }
 
-
     private do99(data : Uint8Array) {
         const result = new Uint8Array(AESAPDUEncoder.RESPONSE_RESULT_BLOCK.length + data.byteLength)
         result.set(data, 0)
         result.set(AESAPDUEncoder.RESPONSE_RESULT_BLOCK, data.byteLength)
         return result
     }
-
 
     private async do87(data: Uint8Array) {
         const encodedData = await this.getEncodedData(data)
@@ -205,7 +203,6 @@ export default class AESAPDUEncoder {
         else
             return AESAPDUEncoder.pad(buffer)
     }
-
 
     private static getEncodedDo87Size(paddedDo87Length: number): Uint8Array {
         const MIN_LONG_FORM_SIZE = 0x80

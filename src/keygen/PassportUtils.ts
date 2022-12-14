@@ -246,10 +246,10 @@ export default class PassportUtils {
     }
 
     /**
-     * Retrieve a key from the encrypted APDU response.
+     * Retrieve a secret key from the encrypted APDU response.
      * @param apduResponse
      */
-    static getDecryptionKeyFromAPDUResponse(apduResponse: Uint8Array) : Uint8Array {
+    static getSecretKeyFromAPDUResponse(apduResponse: Uint8Array) : Uint8Array {
         return utils.hexToBytes(hash.sha256().update(apduResponse, 'hex').digest('hex'));
     }
 }

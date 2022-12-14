@@ -19,10 +19,10 @@ export default class RDEDecryptionHandshakeProtocol {
     private sharedKey: CryptoKey;
     private iv: Uint8Array;
 
-    private retrievedKey: Uint8Array;
+    private retrievedSecretKey: Uint8Array;
 
     /**
-     * Creates a new RDEDecryptionHandshakeProtocol instance.
+     * Create a new RDEDecryptionHandshakeProtocol instance.
      * @param crypto The crypto object to use for key generation and encryption.
      * @param socket The WebSocket to use for communication with the RDE Android client app.
      * @param decryptionParameters The decryption parameters to send to the RDE Android client app.
@@ -42,7 +42,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Generates a new browser key pair, for use in the ECDH key exchange for communication with the RDE Android client app.
+     * Generate a new browser key pair, for use in the ECDH key exchange for communication with the RDE Android client app.
      * @private
      */
     private async generateBrowserKeyPair() {
@@ -50,7 +50,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Sends the given data to the RDE Android client app, encrypted with the shared key.
+     * Send the given data to the RDE Android client app, encrypted with the shared key.
      * @param data
      */
     async sendEncrypted(data : string) {
@@ -66,7 +66,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Generates a new IV for use in the AES-CBC encryption.
+     * Generate a new IV for use in the AES-CBC encryption.
      * @private
      */
     private async genIv() {
@@ -74,7 +74,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Sends the browser key to the RDE Android client app for use in the ECDH key exchange.
+     * Send the browser key to the RDE Android client app for use in the ECDH key exchange.
      */
     async sendBrowserKey() {
         const exportedBrowserKey = await RDEDecryptionHandshakeProtocol.exportKey(this.crypto, this.browserKey.publicKey);
@@ -88,14 +88,14 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Sends the decryption parameters to the RDE Android client app over the socket.
+     * Send the decryption parameters to the RDE Android client app over the socket.
      */
     async sendDecryptionParameters() {
         await this.sendEncrypted(JSON.stringify(this.decryptionParameters))
     }
 
     /**
-     * Derives the shared secret from the browser key and the app key (this is the ECDH key exchange).
+     * Derive the shared secret from the browser key and the app key (this is the ECDH key exchange).
      * @private
      */
     private async deriveSharedSecret() {
@@ -115,7 +115,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Receives the app public key from the RDE Android client app.
+     * Receive the app public key from the RDE Android client app.
      * @param data
      */
     async receiveAppKey(data: JsonWebKey) {
@@ -124,7 +124,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Starts the handshake with the RDE Android client app.
+     * Start the handshake with the RDE Android client app.
      */
     async performHandshake() {
         await this.generateBrowserKeyPair();
@@ -132,7 +132,7 @@ export default class RDEDecryptionHandshakeProtocol {
     }
 
     /**
-     * Receives the retrieved key from the RDE Android client app.
+     * Receive the retrieved secret key from the RDE Android client app.
      * @param data
      */
     async receiveRetrievedKey(data: ArrayBuffer) : Promise<Uint8Array> {
@@ -161,15 +161,15 @@ export default class RDEDecryptionHandshakeProtocol {
         } else {
             let receivedData = await event.data.arrayBuffer()
             receivedData = new Uint8Array(receivedData)
-            this.retrievedKey = await this.receiveRetrievedKey(receivedData);
+            this.retrievedSecretKey = await this.receiveRetrievedKey(receivedData);
             this.socket.close()
         }
     }
 
     /**
-     * Returns the retrieved key from the RDE Android client app.
+     * Return the retrieved key from the RDE Android client app.
      */
     getRetrievedKey() : Uint8Array {
-        return this.retrievedKey;
+        return this.retrievedSecretKey;
     }
 }

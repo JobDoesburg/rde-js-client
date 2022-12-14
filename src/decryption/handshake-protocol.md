@@ -1,7 +1,7 @@
 # RDE decryption handshake protocol
-This document describes the RDE decryption handshake protocol. This protocol is used to transfer the decryption 
-parameters to the RDE Android client app and receive the encryption key back in a secure way. The protocol is based on
-a simple ECDH key agreement protocol with AES-CBC message encryption.
+This document describes the RDE decryption handshake protocol. 
+This protocol is used to transfer the decryption parameters to the RDE Android client app and receive the secret key back in a secure way. 
+The protocol is based on a simple ECDH key agreement protocol with AES-CBC message encryption.
 
 ## Overview
 1. The app generates an ephemeral EC key pair and sends the public key to the browser.
@@ -10,8 +10,8 @@ a simple ECDH key agreement protocol with AES-CBC message encryption.
    other party.
 4. The browser encrypts the decryption parameters using AES-CBC with the shared secret as key and the IV and sends the 
    encrypted data to the app.
-5. The app decrypts the data and initiates key retrieval within the app.
-6. The app encrypts the retrieved key using AES-CBC and sends it to the browser.
+5. The app decrypts the data and initiates decryption within the app.
+6. The app encrypts the retrieved secret key using AES-CBC and sends it to the browser.
 
 ## Protocol
 A typical protocol flow from the app's perspective is provided below.
@@ -22,17 +22,17 @@ A typical protocol flow from the app's perspective is provided below.
 <<< 228e8fb80c8d0da375028fe9cead0bc786a18dcc698d71eec836a16157fb9094243053b55effa4f5f0a9ad6f7bafdef26485c2694fdefb860ae302b8398acbdebbce7f7eb2831afdd0a2f330be35607e
 ```
 
-The first message is sent by the app to the browser and contains the ephemeral public key of the app as JWK. The browser
-responds with its own ephemeral public key as JWK and an IV for the AES-CBC encryption. The browser then also sends the 
-encrypted decryption parameters to the app. The app finally responds with the encrypted retrieved key.
+The first message is sent by the app to the browser and contains the ephemeral public key of the app as JWK. 
+The browser responds with its own ephemeral public key as JWK and an IV for the AES-CBC encryption. 
+The browser then also sends the encrypted decryption parameters to the app.
+The app finally responds with the encrypted retrieved key.
 
 
 ## Security considerations
-The protocol is expected to run over secure WebSocket connections (TLS), which is why the protocol does not include any
-additional security measures. The only reason for encryption is to hide the retrieved key from the proxy server that is
-used to facilitate communication between the browser and the app. If no proxy server is used, there is no reason to 
-implement the protocol in a secure way. In that case, the protocol can be simplified to just sending the decryption
-parameters to the app and receiving the encryption key back, without any encryption.
+The protocol is expected to run over secure WebSocket connections (TLS), which is why the protocol does not include any additional security measures. 
+The only reason for encryption is to hide the retrieved key from the proxy server that is used to facilitate communication between the browser and the app. 
+If no proxy server is used, there is no reason to implement the protocol in a secure way. 
+In that case, the protocol can be simplified to just sending the decryption parameters to the app and receiving the encryption key back, without any encryption.
 
 ## Crypto
 The protocol uses the following crypto primitives:

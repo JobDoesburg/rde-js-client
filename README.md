@@ -115,4 +115,4 @@ In order to support these documents, the `RDEKeyGenerator` should be extended to
 
 ## Acknowledgements
 This library is based on the [RDE Java client](https://gitlab.surf.nl/filesender/rde-java-client).
-The command encoding of the AESAPDUEncoder is based on work by Stephen Kellaway for the [RDW](https://www.rdw.nl/) and the Java [JMRTD](https://jmrtd.org) library.
+The command encoding of the `AESAPDUEncoder` is based on work by Stephen Kellaway for the [RDW](https://www.rdw.nl/) and the Java [JMRTD](https://jmrtd.org) library.

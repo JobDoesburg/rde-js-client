@@ -114,5 +114,5 @@ It does not support documents that use RSA based DH (as most countries do not us
 In order to support these documents, the `RDEKeyGenerator` should be extended to support regular DH key agreement and a different `3DESAPDUEncoder` should be implemented.
 
 ## Acknowledgements
-This library is based on the [RDE Java client](https://gitlab.surf.nl/filesender/rde-java-client).
+This library is based on the [RDE Java client](https://github.com/JobDoesburg/rde-java-client).
 The command encoding of the `AESAPDUEncoder` is based on work by Stephen Kellaway for the [RDW](https://www.rdw.nl/) and the Java [JMRTD](https://jmrtd.org) library.
